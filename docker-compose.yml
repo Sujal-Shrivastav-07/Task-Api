@@ -1,0 +1,20 @@
+services:
+  task-api:
+    build: .
+    container_name: task-api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    restart: unless-stopped
+
+  frontend:
+    image: nginx:alpine
+    container_name: task-api-frontend
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - task-api
+    restart: unless-stopped

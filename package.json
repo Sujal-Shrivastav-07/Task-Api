@@ -1,0 +1,21 @@
+{
+  "name": "task-api",
+  "version": "1.0.0",
+  "description": "A simple REST API for managing tasks, built with Express and ready to run in Docker.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": ["task-api", "express", "rest-api", "docker"],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

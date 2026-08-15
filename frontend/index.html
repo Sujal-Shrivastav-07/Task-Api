@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Task-API Frontend</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --accent: #38bdf8;
+    --accent-2: #22c55e;
+    --danger: #f87171;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 16px;
+  }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .api-status {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    background: var(--muted);
+  }
+  .dot.online { background: var(--accent-2); }
+  .dot.offline { background: var(--danger); }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--card);
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  input, textarea {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .btn-primary { background: var(--accent); color: #0f172a; }
+  .btn-danger { background: var(--danger); color: #0f172a; }
+  .btn-secondary { background: #334155; color: var(--text); }
+  ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  li {
+    background: var(--card);
+    padding: 14px 16px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  li.completed .title { text-decoration: line-through; color: var(--muted); }
+  .title { font-weight: 600; }
+  .desc { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .actions { display: flex; gap: 6px; }
+  .actions button { padding: 6px 10px; font-size: 12px; }
+  .empty { text-align: center; color: var(--muted); margin-top: 30px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>📋 Task-API</h1>
+    <div class="subtitle">Practical-9 · Containerized with Docker</div>
+    <div class="api-status"><span id="statusDot" class="dot"></span><span id="statusText">Checking API...</span></div>
+
+    <form id="taskForm">
+      <input type="text" id="title" placeholder="Task title" required />
+      <textarea id="description" placeholder="Description (optional)" rows="2"></textarea>
+      <button type="submit" class="btn-primary">Add Task</button>
+    </form>
+
+    <ul id="taskList"></ul>
+    <div id="emptyState" class="empty" style="display:none;">No tasks yet — add one above.</div>
+  </div>
+
+<script>
+  // If the frontend is opened via the nginx container (port 8080) or directly as a file,
+  // the API is reachable on localhost:3000.
+  const API_BASE = 'http://localhost:3000';
+
+  const form = document.getElementById('taskForm');
+  const list = document.getElementById('taskList');
+  const emptyState = document.getElementById('emptyState');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+
+  async function checkHealth() {
+    try {
+      const res = await fetch(`${API_BASE}/health`);
+      if (res.ok) {
+        statusDot.className = 'dot online';
+        statusText.textContent = 'API connected';
+      } else {
+        throw new Error();
+      }
+    } catch {
+      statusDot.className = 'dot offline';
+      statusText.textContent = 'API unreachable (is the container running?)';
+    }
+  }
+
+  async function loadTasks() {
+    try {
+      const res = await fetch(`${API_BASE}/tasks`);
+      const tasks = await res.json();
+      renderTasks(tasks);
+    } catch {
+      list.innerHTML = '';
+      emptyState.style.display = 'block';
+      emptyState.textContent = 'Could not load tasks. Make sure the API container is running.';
+    }
+  }
+
+  function renderTasks(tasks) {
+    list.innerHTML = '';
+    emptyState.style.display = tasks.length ? 'none' : 'block';
+    emptyState.textContent = 'No tasks yet — add one above.';
+
+    tasks.forEach((task) => {
+      const li = document.createElement('li');
+      li.className = task.completed ? 'completed' : '';
+      li.innerHTML = `
+        <div>
+          <div class="title">${escapeHtml(task.title)}</div>
+          ${task.description ? `<div class="desc">${escapeHtml(task.description)}</div>` : ''}
+        </div>
+        <div class="actions">
+          <button class="btn-secondary" data-action="toggle" data-id="${task.id}">${task.completed ? 'Undo' : 'Done'}</button>
+          <button class="btn-danger" data-action="delete" data-id="${task.id}">Delete</button>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    if (!title) return;
+
+    await fetch(`${API_BASE}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description }),
+    });
+
+    form.reset();
+    loadTasks();
+  });
+
+  list.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    if (action === 'delete') {
+      await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
+    } else if (action === 'toggle') {
+      const isCompleted = btn.textContent === 'Undo';
+      await fetch(`${API_BASE}/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: !isCompleted }),
+      });
+    }
+    loadTasks();
+  });
+
+  checkHealth();
+  loadTasks();
+  setInterval(checkHealth, 5000);
+</script>
+</body>
+</html>
