@@ -1,6 +1,6 @@
 # Task-API
 
-A simple Task management REST API (Node.js + Express) containerized with Docker, plus a lightweight static frontend — built for **Practical-9: Containerize a Python/Node.js/Java application using Docker** (Silver Oak University).
+A simple Task management REST API (Node.js + Express) containerized with Docker, plus a lightweight static frontend.
 
 ## Project Structure
 
@@ -21,7 +21,7 @@ Task-API/
 - Docker Desktop installed and running
 - Git installed
 
-## How to run (matches the practical steps)
+## How to run 
 
 ```bash
 cd Desktop
