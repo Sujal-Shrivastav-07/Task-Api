@@ -4,23 +4,21 @@ A simple Task management REST API (Node.js + Express) containerized with Docker,
 
 ## Project Structure
 
-```
 Task-API/
 ├── src/
-│   └── index.js          # Express backend (Task CRUD API)
+│ └── index.js # Express backend (Task CRUD API)
 ├── frontend/
-│   └── index.html         # Static frontend UI
+│ └── index.html # Static frontend UI
 ├── package.json
-├── Dockerfile              # Containerizes the Node.js backend
-├── docker-compose.yml       # Runs backend + frontend together
+├── Dockerfile # Containerizes the Node.js backend
+├── docker-compose.yml # Runs backend + frontend together
 ├── .dockerignore
 ├── .gitignore
 └── README.md
-```
 
 ## Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- Docker Desktop installed and running
 - Git installed
 
 ## How to run (matches the practical steps)
@@ -69,20 +67,6 @@ docker compose down
 curl -X POST http://localhost:3000/tasks \
   -H "Content-Type: application/json" \
   -d '{"title": "Finish Docker practical", "description": "Push to GitHub"}'
-```
-
-## Pushing this project to GitHub
-
-If you're starting from this local folder instead of cloning:
-
-```bash
-cd Task-API
-git init
-git add .
-git commit -m "Initial commit: Task-API containerized with Docker"
-git branch -M main
-git remote add origin https://github.com/Sujal-Shrivastav-07/Task-API.git
-git push -u origin main
 ```
 
 ## Notes for the practical report
